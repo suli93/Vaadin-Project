@@ -1,6 +1,6 @@
 # Vaadin-Project
-Team Memebers:
-#Camilo Macias Vargas
+#Team Memebers:
+Camilo Macias Vargas/n
 Muhammad Sulaiman
 Andi Domi 
 Toni Gustafsson 
