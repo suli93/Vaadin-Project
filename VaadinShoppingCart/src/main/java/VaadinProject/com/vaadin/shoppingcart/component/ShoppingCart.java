@@ -6,11 +6,17 @@ import com.vaadin.ui.Label;
 /**
  * Created by keihell on 05/10/2016.
  */
+
+//To create a new component we always have to extend CustomComponent Class
 public class ShoppingCart extends com.vaadin.ui.CustomComponent {
 
+    /*//We define a private class to represent the items that will be inside our ShoppingCart.
     private class ShoppingCartItem{
+        //It's thought like a double-linked list, so we need pointers for previous and next item
+        //for very item object we create.
         private ShoppingCartItem previousItem;
         private ShoppingCartItem nextItem;
+        //Default attributes that our items will have
         private String name;
         private float price;
         private int quantity;
@@ -20,6 +26,7 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
             return this.getQuantity() + " " + this.getName() + " " + this.getPrice();
         }
 
+        //Getters and Setters
         public ShoppingCartItem getPreviousItem() {
             return previousItem;
         }
@@ -59,13 +66,18 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
         public void setQuantity(int quantity) {
             this.quantity = quantity;
         }
-    }
+    }*/
 
+    //Attributes for our ShoppingCart.
+    //Pointers to the first and the last item in our ShoppingCart
     private ShoppingCartItem firstItem;
     private ShoppingCartItem lastItem;
 
+    //We define a default layout.
     private final FormLayout layout = new FormLayout();
 
+    //Constructor method. We just call parent class constructor, and
+    //set some default look & feel settings.
     public ShoppingCart(){
         super();
         this.setSizeFull();
@@ -93,45 +105,70 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
         return this.lastItem;
     }
 
-    public boolean addItemToShoppingCart(String name, String price, String quantity){
-        //TODO: Shpould check if item already exists in shopping cart and just increase quantity and price,
-        //otherwise it should create a new item in the shopping cart.
-
-        if(this.getLastItem()!=null){
-            ShoppingCartItem newItem = new ShoppingCartItem();
-            newItem.setName(name);
-            newItem.setPrice(Float.parseFloat(price));
-            newItem.setQuantity(Integer.parseInt(quantity));
-            newItem.setPreviousItem(this.getLastItem());
-            this.getLastItem().setNextItem(newItem);
-            this.setLastItem(newItem);
-        }else{
-            ShoppingCartItem newItem = new ShoppingCartItem();
-            newItem.setName(name);
-            newItem.setPrice(Float.parseFloat(price));
-            newItem.setQuantity(Integer.parseInt(quantity));
-            newItem.setPreviousItem(this.getLastItem());
-            this.setLastItem(newItem);
-            this.setFirstItem(newItem);
+    //Method to add an Item to our ShoppingCart.
+    public boolean addItemToShoppingCart(ShoppingCartItem item){
+        //Check if the Item has a valid Id
+        if(item.getId()!=0){
+            //Look into the ShoppingCart Items to check if it already exists...
+            if(this.getFirstItem()!=null && this.getLastItem()!=null){
+                //We traverse the ShoppingCart's items starting on the first one
+                ShoppingCartItem indexItem = this.getFirstItem();
+                while(indexItem!=null){
+                    if(indexItem.equals(item)){
+                        //If it's the same item, just increase the quantity and sum the price
+                        return this.appendItemToAnotherItem(item, indexItem);
+                    }
+                    //Get the next item to start a new cycle.
+                    indexItem = indexItem.getNextItem();
+                }
+                //If we didn't find the item in our ShoppingCart, we need to add it.
+                return this.addItemToNonEmptyCart(item);
+            }else{
+                //The ShoppingCart is empty so we add the item
+                return this.addItemToEmptyCart(item);
+            }
         }
+        //If the Item has no valid Id we don't add it to the ShoppingCart.
+        return false;
 
-        renderShoppingCart();
-
-        return true;
     }
 
     public void renderShoppingCart(){
         //TODO: Instead of showing the shopping cart, show a pop up.
+        //Check if our shopping cart is not empty...
         if(this.getFirstItem()!=null && this.getLastItem()!=null){
+            //We remove everything our ShoppingCart's layout is displaying ...
             this.layout.removeAllComponents();
+            //We traverse the ShoppingCart's items starting on the first one
             ShoppingCartItem item = this.getFirstItem();
             while(item!=null){
                 Label lname = new Label(item.getName());
                 Label lprice = new Label(String.valueOf(item.getPrice()));
                 Label lquantity = new Label(String.valueOf(item.getQuantity()));
+                //With this line we add our item information to the layout and therefore is shown on the screen.
                 this.layout.addComponents(lname, lprice, lquantity);
+                //And we get the next item to start a new cycle.
                 item = item.getNextItem();
             }
         }
+    }
+
+    private boolean addItemToNonEmptyCart(ShoppingCartItem item){
+        this.getLastItem().setNextItem(item);
+        item.setPreviousItem(this.getLastItem());
+        this.setLastItem(item);
+        return true;
+    }
+
+    private boolean addItemToEmptyCart(ShoppingCartItem item){
+        this.setFirstItem(item);
+        this.setLastItem(item);
+        return true;
+    }
+
+    private boolean appendItemToAnotherItem(ShoppingCartItem newItem, ShoppingCartItem preexistingItem){
+        preexistingItem.increaseQuantity(newItem.getQuantity());
+        preexistingItem.increasePrice(newItem.getPrice());
+        return true;
     }
 }
