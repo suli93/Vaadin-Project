@@ -1,7 +1,13 @@
 package VaadinProject.com.vaadin.shoppingcart.component;
 
+import com.vaadin.server.Page;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.Position;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Table;
+import com.vaadin.ui.Button;
 
 /**
  * Created by keihell on 05/10/2016.
@@ -10,64 +16,6 @@ import com.vaadin.ui.Label;
 //To create a new component we always have to extend CustomComponent Class
 public class ShoppingCart extends com.vaadin.ui.CustomComponent {
 
-    /*//We define a private class to represent the items that will be inside our ShoppingCart.
-    private class ShoppingCartItem{
-        //It's thought like a double-linked list, so we need pointers for previous and next item
-        //for very item object we create.
-        private ShoppingCartItem previousItem;
-        private ShoppingCartItem nextItem;
-        //Default attributes that our items will have
-        private String name;
-        private float price;
-        private int quantity;
-
-        @Override
-        public String toString(){
-            return this.getQuantity() + " " + this.getName() + " " + this.getPrice();
-        }
-
-        //Getters and Setters
-        public ShoppingCartItem getPreviousItem() {
-            return previousItem;
-        }
-
-        public void setPreviousItem(ShoppingCartItem previousItem) {
-            this.previousItem = previousItem;
-        }
-
-        public ShoppingCartItem getNextItem() {
-            return nextItem;
-        }
-
-        public void setNextItem(ShoppingCartItem nextItem) {
-            this.nextItem = nextItem;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public float getPrice() {
-            return price;
-        }
-
-        public void setPrice(float price) {
-            this.price = price;
-        }
-
-        public int getQuantity() {
-            return quantity;
-        }
-
-        public void setQuantity(int quantity) {
-            this.quantity = quantity;
-        }
-    }*/
-
     //Attributes for our ShoppingCart.
     //Pointers to the first and the last item in our ShoppingCart
     private ShoppingCartItem firstItem;
@@ -75,6 +23,11 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
 
     //We define a default layout.
     private final FormLayout layout = new FormLayout();
+
+    //Configurable attribute to show notifications when an item is added
+    private boolean showAddedItemNotification = true;
+    //Configurable attribute to show notifications when an item is added
+    private boolean automaticSessionSaving = true;
 
     //Constructor method. We just call parent class constructor, and
     //set some default look & feel settings.
@@ -103,6 +56,22 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
 
     public ShoppingCartItem getLastItem(){
         return this.lastItem;
+    }
+
+    public boolean isShowAddedItemNotification() {
+        return showAddedItemNotification;
+    }
+
+    public void setShowAddedItemNotification(boolean showAddedItemNotification) {
+        this.showAddedItemNotification = showAddedItemNotification;
+    }
+
+    public boolean isAutomaticSessionSaving() {
+        return automaticSessionSaving;
+    }
+
+    public void setAutomaticSessionSaving(boolean automaticSessionSaving) {
+        this.automaticSessionSaving = automaticSessionSaving;
     }
 
     //Method to add an Item to our ShoppingCart.
@@ -134,41 +103,155 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
     }
 
     public void renderShoppingCart(){
-        //TODO: Instead of showing the shopping cart, show a pop up.
+        //We remove everything our ShoppingCart's layout is displaying ...
+        this.layout.removeAllComponents();
         //Check if our shopping cart is not empty...
         if(this.getFirstItem()!=null && this.getLastItem()!=null){
-            //We remove everything our ShoppingCart's layout is displaying ...
-            this.layout.removeAllComponents();
+            float total = 0.0F;
+            Table table = new Table();
+            table.setSizeFull();
+
+            // Define two columns for the built-in container
+            table.addContainerProperty("Item", String.class, null);
+            table.addContainerProperty("Qty.",  String.class, null);
+            table.addContainerProperty("Price", Float.class, null);
+            table.addContainerProperty("-",  com.vaadin.ui.Button.class, null);
+            table.addContainerProperty("x", com.vaadin.ui.Button.class, null);
+
             //We traverse the ShoppingCart's items starting on the first one
             ShoppingCartItem item = this.getFirstItem();
             while(item!=null){
-                Label lname = new Label(item.getName());
-                Label lprice = new Label(String.valueOf(item.getPrice()));
-                Label lquantity = new Label(String.valueOf(item.getQuantity()));
-                //With this line we add our item information to the layout and therefore is shown on the screen.
-                this.layout.addComponents(lname, lprice, lquantity);
+                //Create decrease and delete buttons
+                Button decreaseQty = new Button("-");
+                decreaseQty.setId("decrease_"+item.getId());
+                decreaseQty.addClickListener( e -> {
+                    String[] data = decreaseQty.getId().split("_");
+                    String itemId = data[1];
+                    decreaseItemQuantity(Long.parseLong(itemId));
+                    this.renderShoppingCart();
+                });
+
+                Button delete = new Button("X");
+                delete.setId("del_"+item.getId());
+                delete.addClickListener( e -> {
+                    String[] data = delete.getId().split("_");
+                    String itemId = data[1];
+                    this.deleteItem(Long.parseLong(itemId));
+                    this.renderShoppingCart();
+                });
+
+                // Add a new row
+                table.addItem(new Object[]{item.getName(),String.valueOf(item.getQuantity()), item.getPrice(), decreaseQty, delete}, item.getId());
+                total+=item.getPrice();
                 //And we get the next item to start a new cycle.
                 item = item.getNextItem();
             }
+            //We add one last row with the Shopping cart total
+            table.addItem(new Object[]{"TOTAL:","", total, null, null}, 0);
+            // Show exactly the currently contained rows (items)
+            table.setPageLength(table.size());
+            //With this line we add our item information to the layout and therefore is shown on the screen.
+            this.layout.addComponent(table);
         }
     }
 
+    //Method to add item when cart is not empty
     private boolean addItemToNonEmptyCart(ShoppingCartItem item){
         this.getLastItem().setNextItem(item);
         item.setPreviousItem(this.getLastItem());
         this.setLastItem(item);
+        this.saveCartInSession();
+        this.showNotification(item.getName());
         return true;
     }
 
+    //Method to add item when cart is empty
     private boolean addItemToEmptyCart(ShoppingCartItem item){
         this.setFirstItem(item);
         this.setLastItem(item);
+        this.saveCartInSession();
+        this.showNotification(item.getName());
         return true;
     }
 
+    //Method to sum item to another one existing in the Cart
     private boolean appendItemToAnotherItem(ShoppingCartItem newItem, ShoppingCartItem preexistingItem){
         preexistingItem.increaseQuantity(newItem.getQuantity());
         preexistingItem.increasePrice(newItem.getPrice());
+        this.saveCartInSession();
+        this.showNotification(newItem.getName());
         return true;
+    }
+
+    //Method to show notification
+    private void showNotification(String itemName){
+        if (this.isShowAddedItemNotification()){
+            Notification notification = new Notification("New Item Added to Shopping Cart",
+                    "<br/>Added Item: "+itemName,
+                    Notification.TYPE_TRAY_NOTIFICATION, true);
+
+            notification.setPosition(Position.TOP_RIGHT);
+            notification.show(Page.getCurrent());
+        }
+    }
+
+    //Method to decrease one item's quantity
+    private void decreaseItemQuantity(long itemId){
+        if(this.getFirstItem()!=null && this.getLastItem()!=null){
+            ShoppingCartItem item = this.getFirstItem();
+            while(item!=null){
+                if(item.getId()==itemId){
+                    float unitaryPrice = item.getPrice() / item.getQuantity();
+                    item.decreaseQuantity(1);
+                    if(item.getQuantity()==0){
+                        this.deleteItem(item.getId());
+                        break;
+                    }
+                    item.decreasePrice(unitaryPrice);
+                    break;
+                }
+                item = item.getNextItem();
+            }
+        }
+        this.saveCartInSession();
+    }
+
+    //Method to delete one item completely from Cart
+    private boolean deleteItem(long itemId){
+        if(this.getFirstItem()!=null && this.getLastItem()!=null){
+            ShoppingCartItem item = this.getFirstItem();
+            while(item!=null){
+                if(item.getId()==itemId){
+                    if(item.getPreviousItem()!=null){
+                        item.getPreviousItem().setNextItem(item.getNextItem());
+                    }else{
+                        this.setFirstItem(item.getNextItem());
+                    }
+                    if(item.getNextItem()!=null){
+                        item.getNextItem().setPreviousItem(item.getPreviousItem());
+                    }else{
+                        this.setLastItem(item.getPreviousItem());
+                    }
+                    break;
+                }
+                item = item.getNextItem();
+            }
+            this.saveCartInSession();
+            return true;
+        }
+        this.saveCartInSession();
+        return false;
+    }
+
+    //Method to save cart in session
+    private void saveCartInSession(){
+        if(this.isAutomaticSessionSaving()){
+            VaadinSession.getCurrent().setAttribute("__VaadinShoppingCart__", this);
+        }
+    }
+
+    //Method to retreive cart from session
+    public static ShoppingCart recoverFromSession(){
+        return (ShoppingCart) VaadinSession.getCurrent().getAttribute("__VaadinShoppingCart__");
     }
 }

@@ -6,6 +6,7 @@ import VaadinProject.com.vaadin.shoppingcart.component.ShoppingCart;
 import VaadinProject.com.vaadin.shoppingcart.dto.Clothings;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.*;
@@ -33,8 +34,13 @@ public class MyUI extends UI {
         final TextField quantity = new TextField();
         quantity.setCaption("Type item quantity here:");
 
-        //Define a new component of type ShoppingCart :D
-        ShoppingCart myCar = new ShoppingCart();
+        //Try to recover ShoppingCart from session.
+        ShoppingCart myCart = ShoppingCart.recoverFromSession();
+        if(myCart==null){
+            //If there is no shoppingcart in my session, define a new component of type ShoppingCart
+            myCart = new ShoppingCart();
+        }
+        ShoppingCart myCar = myCart;
 
         //Define a button component to submit the form request.
         Button button = new Button("Add Item to Cart");
@@ -47,6 +53,7 @@ public class MyUI extends UI {
                 //If we have all the information, add the item to our ShoppingCart
                 Clothings item = this.generateClothingItem(name.getValue(), price.getValue(), quantity.getValue());
                 myCar.addItemToShoppingCart(item);
+
             }
         });
 
@@ -74,6 +81,7 @@ public class MyUI extends UI {
     public static class MyUIServlet extends VaadinServlet {
     }
 
+    //Method to generate new Clothings instance from the form.
     public Clothings generateClothingItem(String itemName, String itemPrice, String itemQuantity){
         Clothings item = new Clothings();
         item.setName(itemName);

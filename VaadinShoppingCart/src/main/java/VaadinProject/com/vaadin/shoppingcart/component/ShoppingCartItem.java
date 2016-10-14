@@ -93,12 +93,22 @@ public class ShoppingCartItem {
 
     //Method to increase the quantity as much as indicated
     public void increaseQuantity(int quantity){
-        setQuantity(getQuantity()+quantity);
+        this.setQuantity(getQuantity()+quantity);
     }
 
     //Method to increase the price as much as indicated
     public void increasePrice(float price){
-        setPrice(getPrice()+price);
+        this.setPrice(getPrice()+price);
+    }
+
+    //Method to increase the quantity as much as indicated
+    public void decreaseQuantity(int quantity){
+        this.setQuantity(getQuantity()-quantity);
+    }
+
+    //Method to increase the price as much as indicated
+    public void decreasePrice(float price){
+        this.setPrice(getPrice()-price);
     }
 
     @Override
