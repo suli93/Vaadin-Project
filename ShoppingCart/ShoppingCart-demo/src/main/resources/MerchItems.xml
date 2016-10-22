@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<Items>
+    <item id="100001">
+        <name>Winter Sports Jacket</name>
+        <price>100</price>
+        <brand>Adidas</brand>
+        <size>30</size>
+        <yearsGuarantee>2</yearsGuarantee>
+    </item>
+    <item id="100002">
+        <name>Football Shoes</name>
+        <price>30.75</price>
+        <brand>Adidas</brand>
+        <size>40</size>
+        <yearsGuarantee>1</yearsGuarantee>
+    </item>
+    <item id="100003">
+        <name>Coat</name>
+        <price>150</price>
+        <brand>Zahra</brand>
+        <size>30</size>
+        <yearsGuarantee>3</yearsGuarantee>
+    </item>
+<!--    <item id="100004">
+        <name>Cap</name>
+        <price>10</price>
+        <brand>HandM</brand>
+        <size></size>
+        <yearsGuarantee></yearsGuarantee>
+    </item>
+    <item id="100005">
+        <name>Gloves</name>
+        <price>55</price>
+        <brand>Nike</brand>
+        <size></size>
+        <yearsGuarantee></yearsGuarantee>
+    </item> -->
+    <item id="200001">
+        <name>The Hobbit</name>
+        <price>100</price>
+        <publishDate>2005-05-05</publishDate>
+        <type>Legend</type>
+    </item>
+    <item id="200002">
+        <name>The Bible</name>
+        <price>50</price>
+        <publishDate></publishDate>
+        <type></type>
+    </item>
+    <item id="200003">
+        <name>Under the same moon</name>
+        <price>30</price>
+        <publishDate>2055-12-05</publishDate>
+        <type>Science Fiction</type>
+    </item>
+<!--    <item id="200004">
+        <name>Vaadin for Beginners</name>
+        <price>20</price>
+        <publishDate>2005-01-05</publishDate>
+        <type></type>
+    </item>
+    <item id="200005">
+        <name>Build your own business</name>
+        <price>10</price>
+        <publishDate>2010-05-01</publishDate>
+        <type></type>
+    </item> -->
+    <item id="300001">
+        <name>Hammer</name>
+        <price>15</price>
+    </item>
+    <item id="300002">
+        <name>Screw Package</name>
+        <price>5</price>
+    </item>
+    <item id="300003">
+        <name>Screwdriver</name>
+        <price>10</price>
+    </item>
+<!--    <item id="300004">
+        <name>Rope</name>
+        <price>22.45</price>
+    </item>
+    <item id="300005">
+        <name>Bulb</name>
+        <price>5</price>
+    </item> -->
+    <item id="400001">
+        <name>TV</name>
+        <price>100</price>
+        <brand>Sony</brand>
+    </item>
+    <item id="400002">
+        <name>Blutooth Speakers</name>
+        <price>140</price>
+        <brand>Bose</brand>
+    </item>
+    <item id="400003">
+        <name>Laptop</name>
+        <price>86.35</price>
+        <brand>Lenovo</brand>
+    </item>
+<!--    <item id="400004">
+        <name>Keyboard</name>
+        <price>10</price>
+        <brand>Genius</brand>
+    </item>
+    <item id="400005">
+        <name>Washing Machine</name>
+        <price>240</price>
+        <brand>Toshiba</brand>
+    </item> -->
+</Items>
