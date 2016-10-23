@@ -9,8 +9,10 @@ import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.BrowserWindowOpener;
+import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.shared.Position;
 import com.vaadin.shoppingcart.component.ShoppingCart;
 import com.vaadin.shoppingcart.component.ShoppingCartItem;
 import com.vaadin.shoppingcart.dto.Appliances;
@@ -95,7 +97,7 @@ public class DemoUI extends UI
                 Clothings cl = new Clothings();
                 cl.setId(Long.parseLong(el.getAttribute("id")));
                 cl.setName(el.getElementsByTagName("name").item(0).getTextContent());
-                cl.setPrice(Float.parseFloat(el.getElementsByTagName("price").item(0).getTextContent()));
+                cl.setUnitPrice(Float.parseFloat(el.getElementsByTagName("price").item(0).getTextContent()));
                 cl.setSize(Float.parseFloat(el.getElementsByTagName("size").item(0).getTextContent()));
                 cl.setYearsGuarantee(Integer.parseInt(el.getElementsByTagName("yearsGuarantee").item(0).getTextContent()));
 
@@ -135,7 +137,7 @@ public class DemoUI extends UI
                 Books bk = new Books();
                 bk.setId(Long.parseLong(el.getAttribute("id")));
                 bk.setName(el.getElementsByTagName("name").item(0).getTextContent());
-                bk.setPrice(Float.parseFloat(el.getElementsByTagName("price").item(0).getTextContent()));
+                bk.setUnitPrice(Float.parseFloat(el.getElementsByTagName("price").item(0).getTextContent()));
                 String dateS = el.getElementsByTagName("publishDate").item(0).getTextContent();
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd");
 
@@ -184,7 +186,7 @@ public class DemoUI extends UI
                 Tools tool = new Tools();
                 tool.setId(Long.parseLong(el.getAttribute("id")));
                 tool.setName(el.getElementsByTagName("name").item(0).getTextContent());
-                tool.setPrice(Float.parseFloat(el.getElementsByTagName("price").item(0).getTextContent()));
+                tool.setUnitPrice(Float.parseFloat(el.getElementsByTagName("price").item(0).getTextContent()));
                 return tool;
             }catch(Exception ex){
                 System.out.println("There was a problem creating Tools Id: "+el.getAttribute("id"));
@@ -197,7 +199,7 @@ public class DemoUI extends UI
                 Appliances app = new Appliances();
                 app.setId(Long.parseLong(el.getAttribute("id")));
                 app.setName(el.getElementsByTagName("name").item(0).getTextContent());
-                app.setPrice(Float.parseFloat(el.getElementsByTagName("price").item(0).getTextContent()));
+                app.setUnitPrice(Float.parseFloat(el.getElementsByTagName("price").item(0).getTextContent()));
 
                 switch (el.getElementsByTagName("brand").item(0).getTextContent()){
                     case "Toshiba":
@@ -259,7 +261,7 @@ public class DemoUI extends UI
                     Label priceLabel = new Label("Price:");
                     Label brandLabel = new Label("Brand:");
                     Label name = new Label(clothes.getName());
-                    Label price = new Label(String.valueOf(clothes.getPrice()));
+                    Label price = new Label(String.valueOf(clothes.getUnitPrice()));
                     Label brand = new Label(clothes.getBrand().getStringValue());
                     GridLayout itemForm = this.createShoppingCartForm(clothes);
                     vertical.addComponent(nameLabel, 0,0);
@@ -286,7 +288,7 @@ public class DemoUI extends UI
                     Label priceLabel = new Label("Price:");
                     Label typeLabel = new Label("Type:");
                     Label name = new Label(book.getName());
-                    Label price = new Label(String.valueOf(book.getPrice()));
+                    Label price = new Label(String.valueOf(book.getUnitPrice()));
                     Label type = new Label(book.getBookType().getStringValue());
                     GridLayout itemForm = this.createShoppingCartForm(book);
                     vertical.addComponent(nameLabel, 0,0);
@@ -312,7 +314,7 @@ public class DemoUI extends UI
                     Label nameLabel = new Label("Name:");
                     Label priceLabel = new Label("Price:");
                     Label name = new Label(tool.getName());
-                    Label price = new Label(String.valueOf(tool.getPrice()));
+                    Label price = new Label(String.valueOf(tool.getUnitPrice()));
                     GridLayout itemForm = this.createShoppingCartForm(tool);
                     vertical.addComponent(nameLabel, 0,0);
                     vertical.addComponent(name, 1, 0);
@@ -336,7 +338,7 @@ public class DemoUI extends UI
                     Label priceLabel = new Label("Price:");
                     Label brandLabel = new Label("Brand:");
                     Label name = new Label(appliance.getName());
-                    Label price = new Label(String.valueOf(appliance.getPrice()));
+                    Label price = new Label(String.valueOf(appliance.getUnitPrice()));
                     Label brand = new Label(appliance.getBrand().getStringValue());
                     GridLayout itemForm = this.createShoppingCartForm(appliance);
                     vertical.addComponent(nameLabel, 0, 0);
@@ -351,15 +353,6 @@ public class DemoUI extends UI
             }
         }
 
-
-        //Define some textfields components with captions to ask the user to enter some info.
-        //final TextField name = new TextField();
-        //name.setCaption("Type item name here:");
-        //final TextField price = new TextField();
-        //price.setCaption("Type item price here:");
-        //final TextField quantity = new TextField();
-        //quantity.setCaption("Type item quantity here:");
-
         //Try to recover ShoppingCart from session.
         ShoppingCart myCart = ShoppingCart.recoverFromSession();
         if(myCart==null){
@@ -367,8 +360,10 @@ public class DemoUI extends UI
             myCart = new ShoppingCart();
         }
         myCar = myCart;
-
         myCar.setShoppingCartStyles(ValoTheme.TABLE_BORDERLESS, ValoTheme.TABLE_NO_VERTICAL_LINES);
+
+        //In this attribute we should set the uri to payment page.
+        myCar.setUriToCheckout("http://vaadin.org/");
 
         //Define a button component to hide and show the ShoppingCart.
         Button showSC = new Button("Show My ShoppingCart");
@@ -382,19 +377,6 @@ public class DemoUI extends UI
             myCar.renderShoppingCart();
         });
 
-
-
-//        BrowserWindowOpener popupOpener = new BrowserWindowOpener(ShoppingCartAuxUI.class);
-//        popupOpener.setFeatures("height=600,width=600");
-//        popupOpener.extend(showSC);
-
-        // Add a parameter
-//        popupOpener.setParameter("ShoppingCart", myCar);
-
-        // Set a fragment
-//        popupOpener.setUriFragment("myfragment");
-
-        //We add all the components define above to the UI. Without this line we wouldn't see anything on the screen.
         grid.addComponent(showSC, 0,4);
 
 
@@ -409,7 +391,6 @@ public class DemoUI extends UI
     }
 
 
-
     private GridLayout createShoppingCartForm(ShoppingCartItem item){
         GridLayout layout = new GridLayout(2,1);
         TextField qty = new TextField();
@@ -419,14 +400,18 @@ public class DemoUI extends UI
 
         Button btn = new Button("Add to Cart");
         btn.addClickListener( e -> {
-            if(qty.getValue().isEmpty()){
-                this.showError("Quantity cannot be empty.");
+            if(qty.getValue().isEmpty() || qty.getValue().equals("0")){
+                this.showError("Please, specify a valid quantity.");
             }else{
                 int quantity = 0;
                 try{
                     quantity = Integer.parseInt(qty.getValue());
-                    ShoppingCartItem newItem = new ShoppingCartItem(item.getId(), item.getName(), item.getPrice(), quantity);
-                    myCar.addItemToShoppingCart(newItem);
+                    if(quantity<0){
+                        this.showError("Invalid quantity value");
+                    }else{
+                        ShoppingCartItem newItem = new ShoppingCartItem(item.getId(), item.getName(), item.getUnitPrice(), quantity);
+                        myCar.addItemToShoppingCart(newItem);
+                    }
                 }catch(Exception ex){
                     this.showError("Invalid quantity value");
                 }
@@ -438,6 +423,9 @@ public class DemoUI extends UI
     }
 
     private void showError(String s){
-
+        Notification notification = new Notification("Error",
+                s, Notification.TYPE_ERROR_MESSAGE, true);
+        notification.setPosition(Position.TOP_CENTER);
+        notification.show(Page.getCurrent());
     }
 }

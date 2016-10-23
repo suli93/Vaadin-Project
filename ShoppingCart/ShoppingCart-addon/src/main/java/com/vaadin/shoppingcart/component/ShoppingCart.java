@@ -3,11 +3,7 @@ package com.vaadin.shoppingcart.component;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Position;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.Button;
+import com.vaadin.ui.*;
 
 import java.util.ArrayList;
 
@@ -28,12 +24,15 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
     private ShoppingCartItem lastItem;
 
     //We define a default layout.
-    private final FormLayout layout = new FormLayout();
+    private final VerticalLayout layout = new VerticalLayout();
 
     //Configurable attribute to show notifications when an item is added
     private boolean showAddedItemNotification = true;
     //Configurable attribute to show notifications when an item is added
     private boolean automaticSessionSaving = true;
+
+    //URI to redirect for checking out the ShoppingCart
+    private String uriToCheckout;
 
     //Constructor method. We just call parent class constructor, and
     //set some default look & feel settings.
@@ -128,7 +127,7 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
             ShoppingCartItem item = this.getFirstItem();
             while(item!=null){
                 //Create decrease and delete buttons
-                Button decreaseQty = new Button();
+                Button decreaseQty = new Button("-");
                 //decreaseQty.setIcon();
                 decreaseQty.setId("decrease_"+item.getId());
                 decreaseQty.addClickListener( e -> {
@@ -148,8 +147,8 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
                 });
 
                 // Add a new row
-                table.addItem(new Object[]{item.getName(),String.valueOf(item.getQuantity()), item.getPrice(), decreaseQty, delete}, item.getId());
-                total+=item.getPrice();
+                table.addItem(new Object[]{item.getName(),String.valueOf(item.getQuantity()), item.getTotalPrice(), decreaseQty, delete}, item.getId());
+                total+=item.getTotalPrice();
                 //And we get the next item to start a new cycle.
                 item = item.getNextItem();
             }
@@ -164,6 +163,16 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
             }
             //With this line we add our item information to the layout and therefore is shown on the screen.
             this.layout.addComponent(table);
+
+            if(this.getUriToCheckout() != null && !this.getUriToCheckout().equals("")){
+                Button checkout = new Button("Checkout!");
+                checkout.addClickListener( e -> {
+                    getUI().getPage().setLocation(this.getUriToCheckout());
+                });
+                this.layout.addComponent(checkout);
+            }
+        }else{
+            this.layout.addComponent(new Label("Your Cart is empty!"));
         }
     }
 
@@ -189,7 +198,7 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
     //Method to sum item to another one existing in the Cart
     private boolean appendItemToAnotherItem(ShoppingCartItem newItem, ShoppingCartItem preexistingItem){
         preexistingItem.increaseQuantity(newItem.getQuantity());
-        preexistingItem.increasePrice(newItem.getPrice());
+        preexistingItem.increasePrice(newItem.getUnitPrice());
         this.saveCartInSession();
         this.showNotification(newItem.getName());
         return true;
@@ -213,13 +222,12 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
             ShoppingCartItem item = this.getFirstItem();
             while(item!=null){
                 if(item.getId()==itemId){
-                    float unitaryPrice = item.getPrice() / item.getQuantity();
                     item.decreaseQuantity(1);
                     if(item.getQuantity()==0){
                         this.deleteItem(item.getId());
                         break;
                     }
-                    item.decreasePrice(unitaryPrice);
+                    item.decreasePrice(item.getUnitPrice());
                     break;
                 }
                 item = item.getNextItem();
@@ -292,5 +300,13 @@ public class ShoppingCart extends com.vaadin.ui.CustomComponent {
             }
         }
         return removed;
+    }
+
+    public String getUriToCheckout() {
+        return uriToCheckout;
+    }
+
+    public void setUriToCheckout(String uriToCheckout) {
+        this.uriToCheckout = uriToCheckout;
     }
 }

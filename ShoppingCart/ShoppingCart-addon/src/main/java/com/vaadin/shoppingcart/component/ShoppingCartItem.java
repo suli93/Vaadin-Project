@@ -13,7 +13,8 @@ public class ShoppingCartItem {
 
     private long id;
     private String name;
-    private float price;
+    private float unitPrice;
+    private float totalPrice;
     private int quantity;
 
     //Overloaded constructors
@@ -29,15 +30,16 @@ public class ShoppingCartItem {
         this(id, name, 0.0F, quantity);
     }
 
-    public ShoppingCartItem(long id, String name, float price){
-        this(id, name, price, 1);
+    public ShoppingCartItem(long id, String name, float unitPrice){
+        this(id, name, unitPrice, 1);
     }
 
-    public ShoppingCartItem(long id, String name, float price, int quantity){
+    public ShoppingCartItem(long id, String name, float unitPrice, int quantity){
         this.id = id;
         this.name = name;
-        this.price = price;
+        this.unitPrice = unitPrice;
         this.quantity = quantity;
+        this.totalPrice = getUnitPrice() * getQuantity();
     }
 
     //Getters and Setters
@@ -57,12 +59,12 @@ public class ShoppingCartItem {
         this.name = name;
     }
 
-    public float getPrice() {
-        return price;
+    public float getUnitPrice() {
+        return unitPrice;
     }
 
-    public void setPrice(float price) {
-        this.price = price;
+    public void setUnitPrice(float unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
     public int getQuantity() {
@@ -89,6 +91,10 @@ public class ShoppingCartItem {
         this.nextItem = nextItem;
     }
 
+    public float getTotalPrice() {
+        return totalPrice;
+    }
+
     //Business Methods
 
     //Method to increase the quantity as much as indicated
@@ -96,19 +102,22 @@ public class ShoppingCartItem {
         this.setQuantity(getQuantity()+quantity);
     }
 
-    //Method to increase the price as much as indicated
+    //Method to increase the unitPrice as much as indicated
     public void increasePrice(float price){
-        this.setPrice(getPrice()+price);
+        this.totalPrice += price;
     }
 
-    //Method to increase the quantity as much as indicated
+    //Method to decrease the quantity as much as indicated
     public void decreaseQuantity(int quantity){
         this.setQuantity(getQuantity()-quantity);
     }
 
-    //Method to increase the price as much as indicated
+    //Method to decrease the unitPrice as much as indicated
     public void decreasePrice(float price){
-        this.setPrice(getPrice()-price);
+        this.totalPrice = this.totalPrice-price;
+        if(this.totalPrice < 0.0F){
+            this.totalPrice = (this.getUnitPrice()*this.getQuantity())-price;
+        }
     }
 
     @Override
